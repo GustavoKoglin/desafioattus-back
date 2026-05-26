@@ -5,6 +5,9 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
+// Swagger & OpenAPI setup
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
 
 const app = express();
 app.use(cors());
@@ -301,12 +304,34 @@ app.delete('/api/platform-users/:id', authMiddleware, roleMiddleware(['Admin']),
   res.status(204).send();
 });
 
+// Health check endpoint
+app.get('/health', (req: Request, res: Response) => {
+  res.json({ status: 'ok' });
+});
+
+// Swagger UI
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Desafio Attus API',
+      version: '1.0.0',
+      description: 'API documentation for Desafio Attus',
+    },
+    servers: [{ url: `http://localhost:${PORT}` }],
+  },
+  apis: ['./src/**/*.ts'],
+};
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Run server locally if executed directly
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Backend rodando na porta ${PORT}`);
   });
 }
+
 // Export the Express app for Vercel
 export default app;
 
