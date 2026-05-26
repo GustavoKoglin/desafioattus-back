@@ -86,16 +86,31 @@ jobs:
           VERCEL_HEALTH_URL: ${{ secrets.VERCEL_HEALTH_URL }}
         run: |
           set -e
-          echo "Checking Vercel health at $VERCEL_HEALTH_URL"
-          for i in {1..12}; do
-            if curl -sSf "$VERCEL_HEALTH_URL" > /dev/null; then
-              echo "vercel health ok"
-              break
-            fi
-            echo "attempt $i: waiting 5s..."
-            sleep 5
+          echo "Checking Vercel health using VERCEL_HEALTH_URL='$VERCEL_HEALTH_URL'"
+
+          # Build list of candidate URLs: the secret may be a full health URL or a base URL
+          candidates=()
+          if [[ "$VERCEL_HEALTH_URL" =~ /health$ || "$VERCEL_HEALTH_URL" =~ /api/health$ ]]; then
+            candidates+=("$VERCEL_HEALTH_URL")
+          else
+            candidates+=("$VERCEL_HEALTH_URL" "$VERCEL_HEALTH_URL/health" "$VERCEL_HEALTH_URL/api/health")
+          fi
+
+          success=0
+          for url in "${candidates[@]}"; do
+            echo "Trying $url"
+            for i in {1..6}; do
+              if curl -sSf "$url" >/dev/null 2>&1; then
+                echo "OK: $url"
+                success=1
+                break 2
+              fi
+              echo "attempt $i for $url: waiting 5s..."
+              sleep 5
+            done
           done
-          if ! curl --fail --retry 3 --retry-delay 2 "$VERCEL_HEALTH_URL"; then
-            echo "Vercel health check failed"
+
+          if [ "$success" -ne 1 ]; then
+            echo "Vercel health check failed for all candidates: ${candidates[*]}"
             exit 1
           fi
