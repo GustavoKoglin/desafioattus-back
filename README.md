@@ -2,7 +2,13 @@
 
 ## Backend – Node/Express/TypeScript
 
-This repository contains the backend API for the **Desafio Attus** challenge.
+Este repositório contém a API backend para o **Desafio Attus**.
+
+## Links úteis
+- **Repositório Backend**: [github.com/GustavoKoglin/desafioattus-back](https://github.com/GustavoKoglin/desafioattus-back)
+- **Repositório Frontend**: [github.com/GustavoKoglin/desafioattus-front](https://github.com/GustavoKoglin/desafioattus-front)
+- **API local**: [http://localhost:3000/health](http://localhost:3000/health) e [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+- **API em produção**: [https://desafioattus-back.vercel.app/health](https://desafioattus-back.vercel.app/health) e [https://desafioattus-back.vercel.app/api-docs](https://desafioattus-back.vercel.app/api-docs)
 
 ### Tecnologias
 - Node.js (v22) – Alpine base image
@@ -16,8 +22,27 @@ This repository contains the backend API for the **Desafio Attus** challenge.
 git clone https://github.com/GustavoKoglin/desafioattus-back.git
 cd desafioattus-back
 npm ci
-npm run build   # compila TypeScript
-npm run dev     # inicia o servidor (porta 3000)
+```
+
+#### Scripts de Ambiente
+| Script | O que faz |
+|--------|-----------|
+| `npm run dev` | Inicia o servidor com **nodemon** (modo desenvolvimento). |
+| `npm run build:dev` | Compila o TypeScript para ambiente de desenvolvimento. |
+| `npm run build:stage` | Compila para **staging** (usa configuração de produção). |
+| `npm run build:prod` | Compila para **produção**. |
+| `npm run start:dev` | Executa o código compilado em modo desenvolvimento (`node dist/server.js`). |
+| `npm run start:stage` | Executa o código compilado em modo **staging**. |
+| `npm run start:prod` | Executa o código compilado em modo **produção**. |
+
+#### Uso típico
+```bash
+# Desenvolvimento rápido
+npm run dev
+
+# Compilar e executar em produção (simulando Vercel)
+npm run build:prod
+npm run start:prod
 ```
 
 ### Docker
@@ -25,19 +50,28 @@ npm run dev     # inicia o servidor (porta 3000)
 # Build da imagem
 docker compose build
 # Subir o container
-Docker compose up -d
+docker compose up -d
 ```
-
 A aplicação ficará disponível em `http://localhost:3000`.
 
 ### Variáveis de ambiente
 | Nome | Descrição | Exemplo |
 |------|-----------|---------|
-| `JSON_DATA_DIR` | Diretório onde os arquivos JSON de dados são armazenados | `./` |
 | `JWT_SECRET` | Segredo usado para assinar tokens JWT | `super‑secret‑key` |
 | `PORT` | Porta onde a API será exposta (default 3000) | `3000` |
+> **Acesse a aplicação com email e senha abaixo:**
+| `ADMIN_EMAIL` | Email do admin da aplicação | `gustavo.koglin@teste.com` |
+| `ADMIN_PASSWORD` | Senha do admin da aplicação | `Teste@teste123!` |
+> **Demo credentials** – use `gustavo.koglin@teste.com` / `Teste@teste123!` for login (demo only).
 
 ### Documentação completa
 Veja o arquivo `DOCUMENTAÇÃO.MD` para detalhes sobre arquitetura, endpoints, fluxo de autenticação e diagramas.
+
+### Endpoints
+- **Health**: `GET /health` – verifica se a API está rodando.
+- **Swagger UI**: `GET /api-docs` – visualiza a documentação OpenAPI.
+
+### Testes
+Não há suíte de testes unitários ou e2e configurada neste repositório no momento.
 
 ---
