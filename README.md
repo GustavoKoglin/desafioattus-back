@@ -74,6 +74,22 @@ npm run test:e2e
 
 Os testes usam as variáveis `ADMIN_EMAIL` e `ADMIN_PASSWORD` se definidas no ambiente; caso contrário usam credenciais demo.
 
+<!-- ci-trigger: updated to force workflow run -->
+
+### CI / Vercel
+
+Para que o job opcional de verificação pública funcione, adicione um secret no repositório chamado `VERCEL_HEALTH_URL` com a URL do endpoint de health pública da sua implantação (ex.: `https://desafioattus-back.vercel.app/health`).
+
+Como adicionar o secret (GUI do GitHub):
+
+1. Vá para o repositório → Settings → Secrets and variables → Actions.
+2. Clique em **New repository secret**.
+3. Em *Name* coloque `VERCEL_HEALTH_URL` e em *Value* cole a URL do health (ex.: `https://desafioattus-back.vercel.app/health`).
+4. Salve.
+
+O workflow `Backend CI/CD` agora tem um job opcional que, se o secret existir, fará polling no endpoint público após o build.
+
+
 ### Variáveis de ambiente
 | Nome | Descrição | Exemplo |
 |------|-----------|---------|
