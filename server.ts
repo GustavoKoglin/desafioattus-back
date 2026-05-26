@@ -300,6 +300,12 @@ app.delete('/api/platform-users/:id', authMiddleware, roleMiddleware(['Admin']),
   res.status(204).send();
 });
 
-app.listen(PORT, () => {
-  console.log(`Backend rodando na porta ${PORT}`);
-});
+// Run server locally if executed directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Backend rodando na porta ${PORT}`);
+  });
+}
+// Export the Express app for Vercel
+export default app;
+
