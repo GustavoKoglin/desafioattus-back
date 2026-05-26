@@ -13,22 +13,10 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/health",
-      "dest": "/server.ts"
-    },
-    {
-      "src": "/api-docs",
-      "dest": "/server.ts"
-    },
-    {
-      "src": "/api-docs-json",
-      "dest": "/server.ts"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/server.ts"
+      "source": "/(.*)",
+      "destination": "/server.ts"
     }
   ]
 }
