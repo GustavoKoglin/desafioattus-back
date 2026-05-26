@@ -11,18 +11,19 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = 3000;
-const SECRET_KEY = 'supersecretkey-attus-desafio';
+const SECRET_KEY = process.env.JWT_SECRET || 'change-me-to-a-strong-random-secret';
 const DB_FILE = path.join(__dirname, 'db.json');
 
 // Inicializa o banco de dados se não existir
 if (!fs.existsSync(DB_FILE)) {
-  const adminPassword = bcrypt.hashSync('Teste@teste123!', 10);
+  const adminPassword = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'DemoAdminPass123!', 10);
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
   const initialData = {
     users: [
       {
         id: uuidv4(),
-        name: 'Gustavo Koglin',
-        email: 'gustavo.koglin@teste.com',
+        name: 'Admin Demo',
+        email: adminEmail,
         password: adminPassword,
         role: 'Admin',
         type: 'Platform',
