@@ -34,7 +34,7 @@ jobs:
         run: docker compose -f docker-compose.yml build
 
       - name: Start Docker container
-        run: docker compose -f docker-compose.yml up -d
+        run: docker compose -f docker-compose.yml up -d --wait
 
       - name: Smoke test health endpoint
         run: curl --fail --retry 5 --retry-delay 2 http://localhost:3000/health
