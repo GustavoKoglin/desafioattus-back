@@ -5,7 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.ts",
+    "dev": "cross-env NODE_ENV=development nodemon server.ts",
+    "build:dev": "cross-env NODE_ENV=development npm run build",
+    "build:stage": "cross-env NODE_ENV=stage npm run build",
+    "build:prod": "cross-env NODE_ENV=production npm run build",
+    "start:dev": "cross-env NODE_ENV=development node dist/server.js",
+    "start:stage": "cross-env NODE_ENV=stage node dist/server.js",
+    "start:prod": "cross-env NODE_ENV=production node dist/server.js",
     "build": "tsc"
   },
   "keywords": [],
@@ -21,6 +27,7 @@
     "uuid": "^14.0.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
