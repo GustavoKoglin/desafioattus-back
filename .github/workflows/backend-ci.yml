@@ -2,18 +2,18 @@ name: Backend CI/CD
 
 on:
   push:
-    paths:
-      - 'attus-backend/**'
+    branches:
+      - main
+      - pr-scripts-env
   pull_request:
-    paths:
-      - 'attus-backend/**'
+    branches:
+      - main
+      - pr-scripts-env
+  workflow_dispatch:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: attus-backend
 
     steps:
       - name: Checkout repository
