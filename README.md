@@ -33,7 +33,7 @@ A aplicação ficará disponível em `http://localhost:3000`.
 ### Variáveis de ambiente
 | Nome | Descrição | Exemplo |
 |------|-----------|---------|
-| `DATABASE_URL` | URL de conexão ao banco de dados | `postgres://user:pwd@host:5432/db` |
+| `JSON_DATA_DIR` | Diretório onde os arquivos JSON de dados são armazenados | `./` |
 | `JWT_SECRET` | Segredo usado para assinar tokens JWT | `super‑secret‑key` |
 | `PORT` | Porta onde a API será exposta (default 3000) | `3000` |
 

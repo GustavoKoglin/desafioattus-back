@@ -8,6 +8,7 @@
     // Environment Settings
     "module": "commonjs",
     "target": "es2022",
+    "outDir": "api",
     "types": [],
     "esModuleInterop": true,
     "sourceMap": true,
