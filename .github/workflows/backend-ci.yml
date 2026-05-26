@@ -42,15 +42,3 @@ jobs:
       - name: Stop Docker container
         if: always()
         run: docker compose -f docker-compose.yml down
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        run: |
-          docker compose -f docker-compose.yml build
-          docker tag desafioattus_back ${{ secrets.DOCKERHUB_USERNAME }}/desafioattus_back:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/desafioattus_back:latest

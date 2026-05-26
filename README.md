@@ -55,14 +55,26 @@ docker compose up -d
 A aplicação ficará disponível em `http://localhost:3000`.
 
 ### Variáveis de ambiente
+
+Copie e cole este bloco no arquivo `.env` na raiz do backend:
+
+```env
+JWT_SECRET=change-me-to-a-strong-random-secret
+PORT=3000
+ADMIN_EMAIL=gustavo.koglin@teste.com
+ADMIN_PASSWORD=Teste@teste123!
+DATABASE_URL=
+```
+
+Esses valores são suficientes para subir a API localmente e para a execução demo do projeto.
+
 | Nome | Descrição | Exemplo |
 |------|-----------|---------|
-| `JWT_SECRET` | Segredo usado para assinar tokens JWT | `super‑secret‑key` |
+| `JWT_SECRET` | Segredo usado para assinar tokens JWT | `change-me-to-a-strong-random-secret` |
 | `PORT` | Porta onde a API será exposta (default 3000) | `3000` |
-> **Acesse a aplicação com email e senha abaixo:**
 | `ADMIN_EMAIL` | Email do admin da aplicação | `gustavo.koglin@teste.com` |
 | `ADMIN_PASSWORD` | Senha do admin da aplicação | `Teste@teste123!` |
-> **Demo credentials** – use `gustavo.koglin@teste.com` / `Teste@teste123!` for login (demo only).
+| `DATABASE_URL` | Mantido por compatibilidade com o Docker Compose | vazio |
 
 ### Documentação completa
 Veja o arquivo `DOCUMENTAÇÃO.MD` para detalhes sobre arquitetura, endpoints, fluxo de autenticação e diagramas.
@@ -73,5 +85,8 @@ Veja o arquivo `DOCUMENTAÇÃO.MD` para detalhes sobre arquitetura, endpoints, f
 
 ### Testes
 Não há suíte de testes unitários ou e2e configurada neste repositório no momento.
+
+### Exemplo de ambiente
+Se preferir, copie o arquivo `.env.example` para `.env` e ajuste apenas o que precisar.
 
 ---
