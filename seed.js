@@ -9,15 +9,34 @@ const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreir
 const roles = ['Visualizador', 'Editor'];
 
 function seed() {
-  if (!fs.existsSync(dbPath)) return;
-  
-  const db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+  let db;
+
+  if (fs.existsSync(dbPath)) {
+    db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+  } else {
+    db = {
+      users: [
+        {
+          id: uuidv4(),
+          name: 'Admin Demo',
+          email: 'admin@example.com',
+          password: '$2b$10$DleXOORgu76.EXV70CHGWOjBjJnR4g6wAXLR9OkXdM4ZsRQJc4AhG',
+          role: 'Admin',
+          type: 'Platform',
+          cpf: '000.000.000-00',
+          phone: '00000000000',
+          phoneType: 'celular'
+        }
+      ],
+      logs: []
+    };
+  }
   
   // Limpar os fakes antigos caso existam (opcional) ou apenas adicionar novos.
   // Vamos manter os usuários reais (que têm senha) da Plataforma e limpar os fakes
   db.users = db.users.filter(u => u.type === 'Platform' && u.password !== '');
 
-  for (let i = 1; i <= 90; i++) {
+  for (let i = 1; i <= 120; i++) {
     const fName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const name = `${fName} ${lName}`;

@@ -248,7 +248,7 @@ app.put('/api/me', authMiddleware, (req: AuthRequest, res: Response) => {
 app.get('/api/users', authMiddleware, (req: AuthRequest, res: Response) => {
   const db = readDB();
   const safeUsers = db.users
-    .filter((u: any) => !u.role && u.type !== 'Platform') // Filtra quem tem cargo ou é da plataforma
+    .filter((u: any) => u.type === 'App')
     .map((u: any) => {
       const { password, ...rest } = u;
       return rest;
