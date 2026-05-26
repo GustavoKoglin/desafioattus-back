@@ -11,6 +11,32 @@ import swaggerUi from 'swagger-ui-express';
 
 const app = express();
 app.use(cors());
+
+// CORS + Private Network Access (PNA) middleware
+// Allows browsers to perform preflight requests that include
+// `Access-Control-Request-Private-Network` when the frontend is served
+// from a public origin (e.g., Vercel) and needs to call a localhost backend.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const origin = req.headers.origin || '*';
+  // Normalize origin header
+  const originValue = Array.isArray(origin) ? origin[0] : origin;
+  res.setHeader('Access-Control-Allow-Origin', originValue);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    // If the browser requests access to the local network (Private Network Access), allow it
+    if (req.headers['access-control-request-private-network']) {
+      res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    }
+    return res.status(204).end();
+  }
+
+  next();
+});
+
 app.use(express.json());
 
 const PORT = 3000;
