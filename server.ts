@@ -7,7 +7,6 @@ import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 // Swagger & OpenAPI setup
 import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
 
 const app = express();
 app.use(cors());
@@ -94,6 +93,32 @@ const roleMiddleware = (roles: string[]) => {
 };
 
 // Rotas
+/**
+ * @swagger
+ * /api/login:
+ *   post:
+ *     summary: Authenticate a user and return a JWT token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@example.com
+ *               password:
+ *                 type: string
+ *                 example: DemoAdminPass123!
+ *     responses:
+ *       200:
+ *         description: User authenticated successfully
+ *       401:
+ *         description: Invalid credentials
+ */
 app.post('/api/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
   const db = readDB();
@@ -112,7 +137,22 @@ app.post('/api/login', (req: Request, res: Response) => {
   res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
 });
 
-// Buscar Perfil Completo do Usuário Logado
+/**
+ * @swagger
+ * /api/me:
+ *   get:
+ *     summary: Return the authenticated user's profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user profile
+ *       401:
+ *         description: Missing or invalid token
+ *       404:
+ *         description: User not found
+ */
 app.get('/api/me', authMiddleware, (req: AuthRequest, res: Response) => {
   const db = readDB();
   const user = db.users.find((u: any) => u.id === req.user.id);
@@ -121,7 +161,35 @@ app.get('/api/me', authMiddleware, (req: AuthRequest, res: Response) => {
   res.json(safeUser);
 });
 
-// Atualizar Próprio Perfil
+/**
+ * @swagger
+ * /api/me:
+ *   put:
+ *     summary: Update the authenticated user's profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               cpf:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Missing or invalid token
+ *       404:
+ *         description: User not found
+ */
 app.put('/api/me', authMiddleware, (req: AuthRequest, res: Response) => {
   const db = readDB();
   const index = db.users.findIndex((u: any) => u.id === req.user.id);
@@ -136,7 +204,20 @@ app.put('/api/me', authMiddleware, (req: AuthRequest, res: Response) => {
   res.json(db.users[index]);
 });
 
-// Listar Usuários do App
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: List application users
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of application users
+ *       401:
+ *         description: Missing or invalid token
+ */
 app.get('/api/users', authMiddleware, (req: AuthRequest, res: Response) => {
   const db = readDB();
   const safeUsers = db.users
@@ -148,7 +229,46 @@ app.get('/api/users', authMiddleware, (req: AuthRequest, res: Response) => {
   res.json(safeUsers);
 });
 
-// Criar Usuário (Apenas Admin ou Editor)
+/**
+ * @swagger
+ * /api/users:
+ *   post:
+ *     summary: Create an application user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, email]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               cpf:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               phoneType:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: E-mail already exists
+ *       401:
+ *         description: Missing or invalid token
+ *       403:
+ *         description: Access denied
+ */
 app.post('/api/users', authMiddleware, roleMiddleware(['Admin', 'Editor']), (req: AuthRequest, res: Response) => {
   const db = readDB();
   const { name, email, cpf, phone, phoneType, password, role } = req.body;
@@ -178,7 +298,51 @@ app.post('/api/users', authMiddleware, roleMiddleware(['Admin', 'Editor']), (req
   res.status(201).json(safeUser);
 });
 
-// Editar Usuário (Apenas Admin ou Editor)
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   put:
+ *     summary: Update an application user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               cpf:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               phoneType:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *       401:
+ *         description: Missing or invalid token
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: User not found
+ */
 app.put('/api/users/:id', authMiddleware, roleMiddleware(['Admin', 'Editor']), (req: AuthRequest, res: Response) => {
   const db = readDB();
   const index = db.users.findIndex((u: any) => u.id === req.params.id);
@@ -209,7 +373,30 @@ app.put('/api/users/:id', authMiddleware, roleMiddleware(['Admin', 'Editor']), (
   res.json(safeUser);
 });
 
-// Deletar Usuário (Apenas Admin ou Editor)
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Delete an application user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: User deleted successfully
+ *       401:
+ *         description: Missing or invalid token
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: User not found
+ */
 app.delete('/api/users/:id', authMiddleware, roleMiddleware(['Admin', 'Editor']), (req: AuthRequest, res: Response) => {
   const db = readDB();
   const index = db.users.findIndex((u: any) => u.id === req.params.id);
@@ -227,13 +414,44 @@ app.delete('/api/users/:id', authMiddleware, roleMiddleware(['Admin', 'Editor'])
   res.status(204).send();
 });
 
-// Listar Logs (Apenas Admin)
+/**
+ * @swagger
+ * /api/logs:
+ *   get:
+ *     summary: List audit logs
+ *     tags: [Logs]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of logs
+ *       401:
+ *         description: Missing or invalid token
+ *       403:
+ *         description: Access denied
+ */
 app.get('/api/logs', authMiddleware, roleMiddleware(['Admin']), (req: AuthRequest, res: Response) => {
   const db = readDB();
   res.json(db.logs);
 });
 
 // --- PLATFORM USERS ENDPOINTS ---
+/**
+ * @swagger
+ * /api/platform-users:
+ *   get:
+ *     summary: List platform users
+ *     tags: [Platform Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of platform users
+ *       401:
+ *         description: Missing or invalid token
+ *       403:
+ *         description: Access denied
+ */
 app.get('/api/platform-users', authMiddleware, roleMiddleware(['Admin', 'Editor']), (req: AuthRequest, res: Response) => {
   const db = readDB();
   const platformUsers = db.users
@@ -245,6 +463,40 @@ app.get('/api/platform-users', authMiddleware, roleMiddleware(['Admin', 'Editor'
   res.json(platformUsers);
 });
 
+/**
+ * @swagger
+ * /api/platform-users:
+ *   post:
+ *     summary: Create a platform user
+ *     tags: [Platform Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, email]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Platform user created successfully
+ *       400:
+ *         description: E-mail already exists
+ *       401:
+ *         description: Missing or invalid token
+ *       403:
+ *         description: Access denied
+ */
 app.post('/api/platform-users', authMiddleware, roleMiddleware(['Admin']), (req: AuthRequest, res: Response) => {
   const db = readDB();
   const { name, email, role, password } = req.body;
@@ -266,6 +518,45 @@ app.post('/api/platform-users', authMiddleware, roleMiddleware(['Admin']), (req:
   res.status(201).json(safeUser);
 });
 
+/**
+ * @swagger
+ * /api/platform-users/{id}:
+ *   put:
+ *     summary: Update a platform user
+ *     tags: [Platform Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Platform user updated successfully
+ *       401:
+ *         description: Missing or invalid token
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: User not found
+ */
 app.put('/api/platform-users/:id', authMiddleware, roleMiddleware(['Admin']), (req: AuthRequest, res: Response) => {
   const db = readDB();
   const index = db.users.findIndex((u: any) => u.id === req.params.id);
@@ -288,6 +579,30 @@ app.put('/api/platform-users/:id', authMiddleware, roleMiddleware(['Admin']), (r
   res.json(safeUser);
 });
 
+/**
+ * @swagger
+ * /api/platform-users/{id}:
+ *   delete:
+ *     summary: Delete a platform user
+ *     tags: [Platform Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Platform user deleted successfully
+ *       401:
+ *         description: Missing or invalid token
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: User not found
+ */
 app.delete('/api/platform-users/:id', authMiddleware, roleMiddleware(['Admin']), (req: AuthRequest, res: Response) => {
   const db = readDB();
   const index = db.users.findIndex((u: any) => u.id === req.params.id);
@@ -310,20 +625,315 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Swagger UI
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Desafio Attus API',
-      version: '1.0.0',
-      description: 'API documentation for Desafio Attus',
-    },
-    servers: [{ url: `http://localhost:${PORT}` }],
+const swaggerSpec = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Desafio Attus API',
+    version: '1.0.0',
+    description: 'API documentation for Desafio Attus'
   },
-  apis: ['./src/**/*.ts'],
-};
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  servers: [{ url: `http://localhost:${PORT}` }],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT'
+      }
+    }
+  },
+  paths: {
+    '/api/login': {
+      post: {
+        summary: 'Authenticate a user and return a JWT token',
+        tags: ['Auth'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email', 'password'],
+                properties: {
+                  email: { type: 'string', example: 'admin@example.com' },
+                  password: { type: 'string', example: 'DemoAdminPass123!' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'User authenticated successfully' },
+          401: { description: 'Invalid credentials' }
+        }
+      }
+    },
+    '/api/me': {
+      get: {
+        summary: 'Return the authenticated user profile',
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: 'Current user profile' },
+          401: { description: 'Missing or invalid token' },
+          404: { description: 'User not found' }
+        }
+      },
+      put: {
+        summary: 'Update the authenticated user profile',
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  cpf: { type: 'string' },
+                  phone: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Profile updated successfully' },
+          401: { description: 'Missing or invalid token' },
+          404: { description: 'User not found' }
+        }
+      }
+    },
+    '/api/users': {
+      get: {
+        summary: 'List application users',
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: 'Array of application users' },
+          401: { description: 'Missing or invalid token' }
+        }
+      },
+      post: {
+        summary: 'Create an application user',
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name', 'email'],
+                properties: {
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                  cpf: { type: 'string' },
+                  phone: { type: 'string' },
+                  phoneType: { type: 'string' },
+                  password: { type: 'string' },
+                  role: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'User created successfully' },
+          400: { description: 'E-mail already exists' },
+          401: { description: 'Missing or invalid token' },
+          403: { description: 'Access denied' }
+        }
+      }
+    },
+    '/api/users/{id}': {
+      put: {
+        summary: 'Update an application user',
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                  cpf: { type: 'string' },
+                  phone: { type: 'string' },
+                  phoneType: { type: 'string' },
+                  role: { type: 'string' },
+                  password: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'User updated successfully' },
+          401: { description: 'Missing or invalid token' },
+          403: { description: 'Access denied' },
+          404: { description: 'User not found' }
+        }
+      },
+      delete: {
+        summary: 'Delete an application user',
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: {
+          204: { description: 'User deleted successfully' },
+          401: { description: 'Missing or invalid token' },
+          403: { description: 'Access denied' },
+          404: { description: 'User not found' }
+        }
+      }
+    },
+    '/api/logs': {
+      get: {
+        summary: 'List audit logs',
+        tags: ['Logs'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: 'Array of logs' },
+          401: { description: 'Missing or invalid token' },
+          403: { description: 'Access denied' }
+        }
+      }
+    },
+    '/api/platform-users': {
+      get: {
+        summary: 'List platform users',
+        tags: ['Platform Users'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: 'Array of platform users' },
+          401: { description: 'Missing or invalid token' },
+          403: { description: 'Access denied' }
+        }
+      },
+      post: {
+        summary: 'Create a platform user',
+        tags: ['Platform Users'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name', 'email'],
+                properties: {
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                  role: { type: 'string' },
+                  password: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Platform user created successfully' },
+          400: { description: 'E-mail already exists' },
+          401: { description: 'Missing or invalid token' },
+          403: { description: 'Access denied' }
+        }
+      }
+    },
+    '/api/platform-users/{id}': {
+      put: {
+        summary: 'Update a platform user',
+        tags: ['Platform Users'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                  role: { type: 'string' },
+                  password: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Platform user updated successfully' },
+          401: { description: 'Missing or invalid token' },
+          403: { description: 'Access denied' },
+          404: { description: 'User not found' }
+        }
+      },
+      delete: {
+        summary: 'Delete a platform user',
+        tags: ['Platform Users'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: {
+          204: { description: 'Platform user deleted successfully' },
+          401: { description: 'Missing or invalid token' },
+          403: { description: 'Access denied' },
+          404: { description: 'User not found' }
+        }
+      }
+    },
+    '/health': {
+      get: {
+        summary: 'Health check',
+        tags: ['Health'],
+        responses: {
+          200: { description: 'Service is healthy' }
+        }
+      }
+    }
+  }
+} as const;
+app.get('/api-docs-json', (_req: Request, res: Response) => {
+  res.json(swaggerSpec);
+});
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(undefined, {
+  swaggerOptions: {
+    url: '/api-docs-json'
+  }
+}));
 
 // Run server locally if executed directly
 if (require.main === module) {

@@ -4,6 +4,12 @@
 
 Este repositório contém a API backend para o **Desafio Attus**.
 
+## Links úteis
+- **Repositório Backend**: [github.com/GustavoKoglin/desafioattus-back](https://github.com/GustavoKoglin/desafioattus-back)
+- **Repositório Frontend**: [github.com/GustavoKoglin/desafioattus-front](https://github.com/GustavoKoglin/desafioattus-front)
+- **API local**: [http://localhost:3000/health](http://localhost:3000/health) e [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+- **API em produção**: [https://desafioattus-back.vercel.app/health](https://desafioattus-back.vercel.app/health) e [https://desafioattus-back.vercel.app/api-docs](https://desafioattus-back.vercel.app/api-docs)
+
 ### Tecnologias
 - Node.js (v22) – Alpine base image
 - Express
@@ -64,5 +70,8 @@ Veja o arquivo `DOCUMENTAÇÃO.MD` para detalhes sobre arquitetura, endpoints, f
 ### Endpoints
 - **Health**: `GET /health` – verifica se a API está rodando.
 - **Swagger UI**: `GET /api-docs` – visualiza a documentação OpenAPI.
+
+### Testes
+Não há suíte de testes unitários ou e2e configurada neste repositório no momento.
 
 ---
