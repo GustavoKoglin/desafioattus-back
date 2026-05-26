@@ -1,19 +1,20 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Backend CI/CD
 
 on:
   push:
-    paths:
-      - 'attus-backend/**'
+    branches:
+      - main
+      - pr-scripts-env
   pull_request:
-    paths:
-      - 'attus-backend/**'
+    branches:
+      - main
+      - pr-scripts-env
+  workflow_dispatch:
 
 jobs:
-  build-and-push:
+  test-and-build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: attus-backend
 
     steps:
       - name: Checkout repository
@@ -30,14 +31,86 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build Docker image
+        run: docker compose -f docker-compose.yml build
 
-      - name: Build and push Docker image
+      - name: Start Docker container
         run: |
-          docker compose -f docker-compose.yml build
-          docker tag desafioattus_back ${{ secrets.DOCKERHUB_USERNAME }}/desafioattus_back:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/desafioattus_back:latest
+          # start and wait for services to become healthy (compose v2 supports --wait)
+          docker compose -f docker-compose.yml up -d --wait || true
+
+      - name: Show containers
+        run: docker compose -f docker-compose.yml ps
+
+      - name: Smoke test health endpoint
+        run: |
+          set -e
+          echo "Waiting for /health to respond..."
+          for i in {1..12}; do
+            if curl -sSf http://localhost:3000/health > /dev/null; then
+              echo "health ok"
+              break
+            fi
+            echo "attempt $i: waiting 2s..."
+            sleep 2
+          done
+          echo "Running final curl check"
+          if ! curl --fail --retry 3 --retry-delay 2 http://localhost:3000/health; then
+            echo "Health check failed, dumping container logs for debugging"
+            docker compose -f docker-compose.yml logs --no-color --tail=200
+            exit 1
+          fi
+
+      - name: Stop Docker container
+        if: always()
+        run: docker compose -f docker-compose.yml down
+
+  vercel-check:
+    name: Vercel public health check
+    runs-on: ubuntu-latest
+    needs: test-and-build
+    steps:
+      - name: Prepare Vercel URL
+        # map secret into step env and bail out early if it's empty to avoid job-level expressions
+        env:
+          VERCEL_HEALTH_URL: ${{ secrets.VERCEL_HEALTH_URL }}
+        run: |
+          if [ -z "$VERCEL_HEALTH_URL" ]; then
+            echo "VERCEL_HEALTH_URL is empty — skipping vercel-check job"
+            exit 0
+          fi
+          echo "VERCEL_HEALTH_URL is set"
+
+      - name: Public health check
+        env:
+          VERCEL_HEALTH_URL: ${{ secrets.VERCEL_HEALTH_URL }}
+        run: |
+          set -e
+          echo "Checking Vercel health using VERCEL_HEALTH_URL='$VERCEL_HEALTH_URL'"
+
+          # Build list of candidate URLs: the secret may be a full health URL or a base URL
+          candidates=()
+          if [[ "$VERCEL_HEALTH_URL" =~ /health$ || "$VERCEL_HEALTH_URL" =~ /api/health$ ]]; then
+            candidates+=("$VERCEL_HEALTH_URL")
+          else
+            candidates+=("$VERCEL_HEALTH_URL" "$VERCEL_HEALTH_URL/health" "$VERCEL_HEALTH_URL/api/health")
+          fi
+
+          success=0
+          for url in "${candidates[@]}"; do
+            echo "Trying $url"
+            for i in {1..6}; do
+              if curl -sSf "$url" >/dev/null 2>&1; then
+                echo "OK: $url"
+                success=1
+                break 2
+              fi
+              echo "attempt $i for $url: waiting 5s..."
+              sleep 5
+            done
+          done
+
+          if [ "$success" -ne 1 ]; then
+            echo "Vercel health check failed for all candidates: ${candidates[*]}"
+            exit 1
+          fi

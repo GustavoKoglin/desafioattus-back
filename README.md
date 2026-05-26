@@ -54,15 +54,61 @@ docker compose up -d
 ```
 A aplicação ficará disponível em `http://localhost:3000`.
 
+### Testes
+
+O repositório inclui testes unitários e e2e com Jest + Supertest. Os scripts disponíveis no `package.json` são:
+
+```bash
+# Instalar dependências
+npm ci
+
+# Rodar todos os testes (unit + e2e)
+npm test
+
+# Apenas unitários
+npm run test:unit
+
+# Apenas e2e
+npm run test:e2e
+```
+
+Os testes usam as variáveis `ADMIN_EMAIL` e `ADMIN_PASSWORD` se definidas no ambiente; caso contrário usam credenciais demo.
+
+<!-- ci-trigger: updated to force workflow run -->
+
+### CI / Vercel
+
+Para que o job opcional de verificação pública funcione, adicione um secret no repositório chamado `VERCEL_HEALTH_URL` com a URL do endpoint de health pública da sua implantação (ex.: `https://desafioattus-back.vercel.app/health`).
+
+Como adicionar o secret (GUI do GitHub):
+
+1. Vá para o repositório → Settings → Secrets and variables → Actions.
+2. Clique em **New repository secret**.
+3. Em *Name* coloque `VERCEL_HEALTH_URL` e em *Value* cole a URL do health (ex.: `https://desafioattus-back.vercel.app/health`).
+4. Salve.
+
+O workflow `Backend CI/CD` agora tem um job opcional que, se o secret existir, fará polling no endpoint público após o build.
+
+
 ### Variáveis de ambiente
 | Nome | Descrição | Exemplo |
 |------|-----------|---------|
-| `JWT_SECRET` | Segredo usado para assinar tokens JWT | `super‑secret‑key` |
+| `JWT_SECRET` | Segredo usado para assinar tokens JWT | `change-me-to-a-strong-random-secret` |
 | `PORT` | Porta onde a API será exposta (default 3000) | `3000` |
 > **Acesse a aplicação com email e senha abaixo:**
-| `ADMIN_EMAIL` | Email do admin da aplicação | `gustavo.koglin@teste.com` |
-| `ADMIN_PASSWORD` | Senha do admin da aplicação | `Teste@teste123!` |
-> **Demo credentials** – use `gustavo.koglin@teste.com` / `Teste@teste123!` for login (demo only).
+| `ADMIN_EMAIL` | Email do admin da aplicação | `admin@example.com` |
+| `ADMIN_PASSWORD` | Senha do admin da aplicação | `change-me` |
+> **Demo credentials** – use `admin@example.com` / `change-me` for login (demo only).
+
+Copie e cole este bloco no arquivo `.env` na raiz do backend:
+
+```env
+JWT_SECRET=change-me-to-a-strong-random-secret
+PORT=3000
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=change-me
+DATABASE_URL=
+```
 
 ### Documentação completa
 Veja o arquivo `DOCUMENTAÇÃO.MD` para detalhes sobre arquitetura, endpoints, fluxo de autenticação e diagramas.
