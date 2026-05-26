@@ -4,7 +4,8 @@ import path from 'path';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import cors from 'cors';
-import { v4 as uuidv4 } from 'uuid';
+// lightweight id generator (avoid ESM-only uuid in Jest environment)
+const uuidv4 = () => 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 10);
 // Swagger & OpenAPI setup
 import swaggerUi from 'swagger-ui-express';
 
