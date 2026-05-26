@@ -4,7 +4,7 @@
       "id": "Gustavo Koglin",
       "name": "Gustavo Koglin",
       "email": "gustavo.koglin@teste.com",
-      "password": "Teste@teste123!",
+      "password": "$2b$10$TLvsjPlcNKBrrAuzq.1g1ejX70T/2Yd3brSpeF5KwPDi7zJlsE7sO",
       "role": "Admin",
       "type": "Platform",
       "cpf": "000.000.000-00",
